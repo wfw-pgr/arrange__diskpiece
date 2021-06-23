@@ -9,6 +9,10 @@ import nkUtilities.load__constants as lcn
 # ========================================================= #
 def arrange__diskpiece():
 
+    # ------------------------------------------------- #
+    # --- [1] preparation                           --- #
+    # ------------------------------------------------- #
+    
     voluDim     = 3
     cnsFile     = "dat/parameter.conf"
     const       = lcn.load__constants( inpFile=cnsFile )
@@ -25,6 +29,10 @@ def arrange__diskpiece():
     center_pos  = esg.equiSpaceGrid( x1MinMaxNum=x1MinMaxNum, x2MinMaxNum=x2MinMaxNum, \
                                      x3MinMaxNum=x3MinMaxNum, returnType = "point" )
 
+    # ------------------------------------------------- #
+    # --- [2] define nut                            --- #
+    # ------------------------------------------------- #
+    
     vlist = []
     for inut in range( center_pos.shape[0] ):
         xc,yc,zc    = center_pos[inut,:]
@@ -33,8 +41,27 @@ def arrange__diskpiece():
         disk2       = gmsh.model.occ.addCylinder( xc,yc,zc, dx,dy,dz, r_inner )
         target,tool = [(voluDim,disk1)], [(voluDim,disk2)]
         disk3       = gmsh.model.occ.cut( target, tool )
-        vlist.append( disk3 )
+        vlist.append( disk3[0][0][1] )
+
+
+    # ------------------------------------------------- #
+    # --- [2] half plane (y)                        --- #
+    # ------------------------------------------------- #
     
+    flag__half_yplane = True
+
+    if ( const["half_yplane"] ):
+        xLeng   = ( const["nut_xMax"] - const["nut_xMin"] ) * 2.0
+        yLeng   = ( const["nut_yMax"] - const["nut_yMin"] )
+        zLeng   =   const["z_thick"]  * 2.0
+        xfrom   = ( const["nut_xMin"] - xLeng * 0.25 )
+        yfrom   =   - yLeng
+        zfrom   =   const["nut_zpos"] - zLeng * 0.50
+        box     = gmsh.model.occ.addBox( xfrom, yfrom, zfrom, xLeng, yLeng, zLeng )
+        target  = [ (voluDim,voluNum) for voluNum in vlist ]
+        tool    = [ (voluDim,box)]
+        gmsh.model.occ.cut( target, tool )
+        
     return()
 
     
