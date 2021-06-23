@@ -25,12 +25,16 @@ def arrange__diskpiece():
     center_pos  = esg.equiSpaceGrid( x1MinMaxNum=x1MinMaxNum, x2MinMaxNum=x2MinMaxNum, \
                                      x3MinMaxNum=x3MinMaxNum, returnType = "point" )
 
+    vlist = []
     for inut in range( center_pos.shape[0] ):
         xc,yc,zc    = center_pos[inut,:]
+        zc          = zc - 0.5*const["z_thick"]
         disk1       = gmsh.model.occ.addCylinder( xc,yc,zc, dx,dy,dz, r_outer )
         disk2       = gmsh.model.occ.addCylinder( xc,yc,zc, dx,dy,dz, r_inner )
         target,tool = [(voluDim,disk1)], [(voluDim,disk2)]
         disk3       = gmsh.model.occ.cut( target, tool )
+        vlist.append( disk3 )
+    
     return()
 
     
